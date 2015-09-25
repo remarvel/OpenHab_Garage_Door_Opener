@@ -21,11 +21,6 @@ red = 4
 cDoorOpen = 27
 rDoorOpen = 22
 
-##cDoorTrigger = 9
-##cDoorEcho = 10
-##rDoorTrigger = 14
-##rDoorEcho = 15
-
 cDoor = 9
 rDoor = 10
 
@@ -39,21 +34,12 @@ cDoorState = "Closed"
 # Set pins as output and input
 GPIO.setup(parkTrigger,GPIO.OUT)  # Trigger
 GPIO.setup(parkEcho,GPIO.IN)      # Echo
-##GPIO.setup(cDoorTrigger,GPIO.OUT)  # Trigger
-##GPIO.setup(cDoorEcho,GPIO.IN)      # Echo
-##GPIO.setup(rDoorTrigger,GPIO.OUT)  # Trigger
-##GPIO.setup(rDoorEcho,GPIO.IN)      # Echo
-##GPIO.setup(cDoorOpen,GPIO.OUT)
-##GPIO.setup(rDoorOpen,GPIO.OUT)
 GPIO.setup(green,GPIO.OUT)
 GPIO.setup(yellow,GPIO.OUT)
 GPIO.setup(red,GPIO.OUT)
 GPIO.setup(cDoor,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(rDoor,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 ## wire one side to pin above and other to 3.3v for door switches
-
-##GPIO.output(cDoorOpen, True)
-##GPIO.output(rDoorOpen, True)
 
 def send_trigger_pulse(trigger):
         GPIO.output(trigger, True)
@@ -75,61 +61,9 @@ def get_distance(trigger, echo):
         distance_cm = pulse_len / 0.000058
         return distance_cm
 
-##def getDistance(trigger, echo):
-##        # Set trigger to False (Low)
-##	GPIO.output(trigger, False)
-##
-##	# Allow module to settle
-##	time.sleep(0.5)
-##
-##	# Send 10us pulse to trigger
-##	GPIO.output(trigger, True)
-##	time.sleep(0.00001)
-##	GPIO.output(trigger, False)
-##	start = time.time()
-##	while GPIO.input(echo)==0:
-##  		start = time.time()
-##
-##	while GPIO.input(echo)==1:
-##  		stop = time.time()
-##
-##	# Calculate pulse length
-##	elapsed = stop-start
-##
-##	# Distance pulse travelled in that time is time
-##	# multiplied by the speed of sound (cm/s)
-##	distance = elapsed * 34000
-##
-##	# That was the distance there and back so halve the value
-##	distance = distance / 2
-##	return distance
-
-##def on_connect(client, userdata, flags, rc):
-##    print("Connected with result code "+str(rc))
-##
-##    # Subscribing in on_connect() means that if we lose the connection and
-##    # reconnect then subscriptions will be renewed.
-##    client.subscribe("$SYS/#")
-
-##def on_message(msg):
-##    print(msg.topic+" "+str(msg.payload))
-##    if msg.topic == "garage/robsDoor/command":
-##            GPIO.output(rDoorOpen, False)
-##            time.sleep(0.1)
-##            GPIO.output(rDoorOpen, True)
-##    if msg.topic == "garage/christinasDoor/command":
-##            GPIO.output(cDoorOpen, False)
-##            time.sleep(0.1)
-##            GPIO.output(cDoorOpen, True)
-
-
 mqttc = mosquitto.Mosquitto("doormonitor_pub")
 mqttc.will_set("/event/dropped", "Sorry, I seem to have died.")
 mqttc.connect("192.168.1.98", 1883, 60, True)
-#client.on_connect = on_connect
-##mqttc.subscribe("garage/robsDoor/command")
-##mqttc.subscribe("garage/christinasDoor/command")
-##mqttc.on_message = on_message
 
 while True:
         
@@ -145,29 +79,6 @@ while True:
         else:
                 cDoorState = "Closed"
                 mqttc.publish("garage/christinasDoor/state", "Closed")
-##	#try:
-##        rDistance = get_distance(rDoorTrigger, rDoorEcho)
-##        if rDistance < 50:
-##                rDoorState = "Open"
-##                mqttc.publish("garage/robsDoor/state", "Open")
-##        else:
-##                rDoorState = "Closed"
-##                mqttc.publish("garage/robsDoor/state", "Closed")
-##        #except:
-##                #print "Error reading Rob's door"
-##        try:
-##                
-##                cDistance = get_distance(cDoorTrigger, cDoorEcho)
-##                if cDistance < 50:
-##                        cDoorState = "Open"
-##                        mqttc.publish("garage/christinasDoor/state", "Open")
-##                else:
-##                        cDoorState = "Closed"
-##                        mqttc.publish("garage/christinasDoor/state", "Closed")
-##        except:
-##                print "Error reading Chistina's door"
-##	print "cDistance : %.1f" % cDistance + " - " + cDoorState
-##	print "rDistance : %.1f" % rDistance + " - " + rDoorState
 
         try:
                 parkDistance = get_distance(parkTrigger, parkEcho)
@@ -205,15 +116,7 @@ while True:
                         GPIO.output(red, False)
 	except:
                 print "Error reading park sensor"
-	
-##	humidity, temperature = Adafruit_DHT.read_retry(sensor, tempHum)
-##	if humidity is not None and temperature is not None:
-##		tempf = (temperature*1.8)+32
-##		print 'Temp={0:0.1f}*F  Humidity={1:0.1f}%'.format(tempf, humidity)
-##		mqttc.publish("garage/temperature", str(tempf))
-##		mqttc.publish("garage/humidity", str(humidity))
-##	else:
-##		print 'Failed to get reading. Try again!'		
+		
 	mqttc.loop()
 	time.sleep(0.1)
         
